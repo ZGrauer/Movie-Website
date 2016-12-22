@@ -36,8 +36,9 @@ main_page_head = '''
             height: 100%;
         }
         .movie-tile {
-            margin-bottom: 20px;
-            padding-top: 20px;
+            margin-bottom: 15px;
+            padding-top: 15px;
+            min-height: 550px;
         }
         .movie-tile:hover {
             background-color: #EEE;
@@ -56,14 +57,30 @@ main_page_head = '''
             top: 0;
             background-color: white;
         }
-        .navbar-brand {
-            font-size: 30px;
+        .navbar-inverse .navbar-brand {
+            font-size: 34px;
+            color: #F6A4AC;
+            height: 50px;
+            font-weight: bold;
+            text-shadow: 2px 2px #520008
+        }
+        .navbar-inverse .navbar-brand:hover {
+            color: #520008;
+            text-shadow: 1px 1px #F6A4AC
+        }
+        .navbar-inverse {
+            background-color: #A43741;
+            background-image: none;
+            border-color: #7B151E;
         }
         .movie-title {
            font-size: 20px;
         }
-        .storyline {
+        .storyline, .movie-info {
             text-align: left;
+        }
+        .movie-info {
+            font-size: 12px;
         }
     </style>
     <script type="text/javascript" charset="utf-8">
@@ -133,7 +150,8 @@ main_page_content = '''
 movie_tile_content = '''
 <div class="col-md-6 col-lg-4 movie-tile text-center" data-trailer-youtube-id="{trailer_youtube_id}" data-toggle="modal" data-target="#trailer">
     <img src="{poster_image_url}" width="220" height="342">
-    <h2 class="movie-title">{movie_title} ({year})</h2>
+    <h2 class="movie-title">{movie_title}</h2>
+    <p class="movie-info">{rated}  |  {runtime}  |  {year}</p>
     <p class="storyline">{storyline}</p>
 </div>
 '''
@@ -157,7 +175,9 @@ def create_movie_tiles_content(movies):
             year=movie.year,
             poster_image_url=movie.poster_image_url,
             trailer_youtube_id=trailer_youtube_id,
-            storyline=movie.storyline
+            storyline=movie.storyline,
+            rated=movie.rated,
+            runtime=movie.runtime
         )
     return content
 

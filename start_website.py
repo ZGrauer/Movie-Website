@@ -1,62 +1,81 @@
+# -*- coding: cp1252 -*-
 import media
 import fresh_tomatoes
+import json
+import urllib
+import re
 
-# Instantiate movie objects for use on website.
-fear_and_loathing = media.Movie("Fear and Loathing in Las Vegas",
-                           "1998",
-                           "An oddball journalist and his psychopathic "
-                            "lawyer travel to Las Vegas for a series of "
-                            "psychedelic escapades.",
-                           "https://images-na.ssl-images-amazon.com/images/M/MV5BNjA2ZDY3ZjYtZmNiMC00MDU5LTgxMWEtNzk1YmI3NzdkMTU0XkEyXkFqcGdeQXVyNjQyMjcwNDM@._V1_.jpg",  # NOQA
-                           "https://www.youtube.com/watch?v=8m662obIvhY")
-pulp_fiction = media.Movie("Pulp Fiction",
-                           "1994",
-                           "The lives of two mob hit men, a boxer, a "
-                           "gangster's wife, and a pair of diner bandits "
-                           "intertwine in four tales of violence and "
-                           "redemption.",
-                           "https://images-na.ssl-images-amazon.com/images/M/MV5BMTkxMTA5OTAzMl5BMl5BanBnXkFtZTgwNjA5MDc3NjE@._V1_SY1000_CR0,0,673,1000_AL_.jpg",  # NOQA
-                           "https://www.youtube.com/watch?v=s7EdQ4FqbhY")
-deadpool = media.Movie("Deadpool",
-                           "2016",
-                           "A fast-talking mercenary with a morbid sense of "
-                           "humor is subjected to a rogue experiment that "
-                           "leaves him with accelerated healing powers and "
-                           "a quest for revenge.",
-                           "https://images-na.ssl-images-amazon.com/images/M/MV5BMjQyODg5Njc4N15BMl5BanBnXkFtZTgwMzExMjE3NzE@._V1_SY1000_SX686_AL_.jpg",  # NOQA
-                           "https://www.youtube.com/watch?v=oCvLUxICxEI")
-die_hard = media.Movie("Die Hard",
-                           "1988",
-                           "John McClane, officer of the NYPD, tries to save "
-                           "his wife Holly Gennaro and several others that "
-                           "were taken hostage by German terrorist "
-                           "Hans Gruber during a Christmas party at the "
-                           "Nakatomi Plaza in Los Angeles.",
-                           "https://images-na.ssl-images-amazon.com/images/M/MV5BMzNmY2IwYzAtNDQ1NC00MmI4LThkOTgtZmVhYmExOTVhMWRkXkEyXkFqcGdeQXVyMTk5NDA3Nw@@._V1_.jpg",  # NOQA
-                           "https://www.youtube.com/watch?v=2TQ-pOvI6Xo")
-back_to_the_future = media.Movie("Back to the Future",
-                                 "1985",
-                                 "Marty McFly, a 17-year-old high school "
-                                 "student, is accidentally sent 30 years "
-                                 "into the past in a time-traveling DeLorean "
-                                 "invented by his close friend, the maverick "
-                                 "scientist Doc Brown.",
-                                 "https://images-na.ssl-images-amazon.com/images/M/MV5BZmU0M2Y1OGUtZjIxNi00ZjBkLTg1MjgtOWIyNThiZWIwYjRiXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SY1000_CR0,0,643,1000_AL_.jpg",  # NOQA
-                                 "https://www.youtube.com/watch?v=qvsgGtivCgs")
-dark_kight = media.Movie("The Dark Knight",
-                         "2008",
-                         "When the menace known as the Joker wreaks havoc and "
-                         "chaos on the people of Gotham, the caped crusader "
-                         "must come to terms with one of the greatest "
-                         "psychological tests of his ability to fight "
-                         "injustice.",
-                         "https://images-na.ssl-images-amazon.com/images/M/MV5BMTMxNTMwODM0NF5BMl5BanBnXkFtZTcwODAyMTk2Mw@@._V1_SY1000_CR0,0,675,1000_AL_.jpg",  # NOQA
-                         "https://www.youtube.com/watch?v=_PZpmTj1Q8Q")
+def config_movie_objects():
+    """This initializes Movie objects, then send them to fresh_tomatoes to
+    create the HTML and open the website.  The movie data is queried from
+    IMDB and the trailer URL is queried from YouTube.
 
-# Populate movie list with Movie objects.
-movies = [fear_and_loathing,pulp_fiction,deadpool,die_hard,
-          back_to_the_future,dark_kight]
+    Args:
+        none
 
-# Send the list of objects to the open_movies_page method
-# This generates and opens the fresh_tomatoes website
-fresh_tomatoes.open_movies_page(movies)
+    Returns:
+        none
+    """
+    movies = []
+    movie_title_list=["Back to the Future","Blazing Saddles","The Dark Knight",
+                      "Deadpool","Die Hard","Fear and Loathing in Las Vegas",
+                      "Forbidden Zone","Guardians of the Galaxy",
+                      "The Last Dragon","Pulp Fiction","They Live"]
+    #  For every movie title gather info and add to list
+    for movie_title in movie_title_list:
+        imdb_data = query_imdb(movie_title)
+        trailer_url = query_youtube(movie_title)
+
+        if imdb_data["Response"] == "True":  #  Dictionary contains movie info
+            movies.append(media.Movie(imdb_data["Title"],
+                                      imdb_data["Year"],
+                                      imdb_data["Plot"],
+                                      imdb_data["Poster"],
+                                      trailer_url,
+                                      imdb_data["Rated"],
+                                      imdb_data["Runtime"]))
+
+    # Send the list of movie objects to the open_movies_page method
+    # Generates and opens the fresh_tomatoes website
+    fresh_tomatoes.open_movies_page(movies)
+
+
+def query_imdb(movie_title):
+    """This will query and return all data from IMDB based on movie title.
+
+    Args:
+        movie_title (str): This is the movie title to search for
+
+    Returns:
+        dictionary: dictionary based on response json. Response==False on error
+    """
+    base_url = "http://omdbapi.com/?t=" #  Only submitting Title
+    response = urllib.urlopen(base_url + movie_title)
+    if response.getcode() == 200:  #  HTTP status is OK
+        imdb_data = json.loads(response.read())  #  Deserialize into dictionary
+        return imdb_data
+    else:  #  HTTP error
+        return {"Response" : "False"}
+                            
+def query_youtube(movie_title):
+    """This will query and return the first youtube URL based
+    on movie title.  " trailer" is added to the end of every
+    search.
+
+    Args:
+        movie_title (str): This is the movie title to search for
+
+    Returns:
+        str: The URL for the 1st trailer on Youtube
+    """
+    #convert movie_title to “percent-encoded” string, then open search
+    query_string = urllib.urlencode({"search_query" : movie_title + " trailer"})
+    html_content = urllib.urlopen("http://www.youtube.com/results?" +
+                                          query_string)
+    #use regular expressions to find all 11 character videos IDs
+    query_results = re.findall(r'href=\"\/watch\?v=(.{11})',
+                                html_content.read())
+    return "http://www.youtube.com/watch?v=" + query_results[0]
+                        
+
+config_movie_objects()                   

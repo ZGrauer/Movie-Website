@@ -6,7 +6,10 @@
 
   Server-side Python code to store a list of favorite movies, 
   including box art imagery and a movie trailer URL. The code 
-  generates a static web page allowing visitors to browse movies.
+  generates a static web page allowing visitors to browse movies.  The 
+  movie information is queried from IMDB and the trailer URL queried
+  from Youtube.  Only the movie title needs specified to be added to
+  the page.
 
   Installation & Usage
   --------------------
@@ -27,6 +30,10 @@
   opened in your default browser.  Steps 1 through 4 are not required once 
   the fresh_tomatoes.html file has been generated, fresh_tomatoes.html can 
   be opened directly.
+
+  If you wish to change the displayed movies, edit movie_title_list on 
+  line 20 of start_website.py.  Then simply run file start_website.py 
+  again to generate a new *.HTML file.
 
   License
   -------
