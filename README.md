@@ -1,6 +1,6 @@
 # Movie Trailer Website
 
- ### What is it?
+### What is it?
 
 
  Server-side Python code to store a list of favorite movies, 
